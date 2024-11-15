@@ -9,26 +9,20 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <flink.version>1.17.2</flink.version>
     </properties>
 
 
 
     <build>
         <plugins>
-            <!-- Compiler Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
-                <configuration>
-                    <source>17</source>
-                    <target>17</target>
-                </configuration>
             </plugin>
-
-            <!-- Exec Plugin -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -41,23 +35,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>com.linusjern.marketanalysis.SparkConsumerApp</mainClass>
-                    <arguments>
-                        <argument>--add-opens=java.base/java.lang=ALL-UNNAMED</argument>
-                        <argument>--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</argument>
-                        <argument>--add-opens=java.base/java.lang.reflect=ALL-UNNAMED</argument>
-                        <argument>--add-opens=java.base/java.io=ALL-UNNAMED</argument>
-                        <argument>--add-opens=java.base/java.net=ALL-UNNAMED</argument>
-                        <argument>--add-opens=java.base/java.nio=ALL-UNNAMED</argument>
-                        <argument>--add-opens=java.base/java.util=ALL-UNNAMED</argument>
-                        <argument>--add-opens=java.base/java.util.concurrent=ALL-UNNAMED</argument>
-                        <argument>--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED</argument>
-                        <argument>--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</argument>
-                        <argument>--add-opens=java.base/sun.nio.cs=ALL-UNNAMED</argument>
-                        <argument>--add-opens=java.base/sun.security.action=ALL-UNNAMED</argument>
-                        <argument>--add-opens=java.base/sun.util.calendar=ALL-UNNAMED</argument>
-                        <argument>--add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED</argument>
-                    </arguments>
+                    <mainClass>com.linusjern.marketanalysis.MarketDataWindowConsumer</mainClass>
                 </configuration>
             </plugin>
         </plugins>
@@ -65,27 +43,26 @@
 
 
     <dependencies>
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-java</artifactId>
+			<version>${flink.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-streaming-java</artifactId>
+			<version>${flink.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-clients</artifactId>
+			<version>${flink.version}</version>
+		</dependency>
 
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql_2.12</artifactId>
-            <version>3.5.3</version>
-        </dependency>
-
-        <!-- Spark SQL Kafka for Spark 3.5.3 and Scala 2.12 -->
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql-kafka-0-10_2.12</artifactId>
-            <version>3.5.3</version>
-        </dependency>
-
-        <!-- Kafka Clients -->
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
-            <version>3.0.0</version>
-        </dependency>
-
-
+		<dependency>
+		  <groupId>org.apache.flink</groupId>
+		  <artifactId>flink-connector-kafka</artifactId>
+		  <version>${flink.version}</version>
+		</dependency>
     </dependencies>
 </project>
