@@ -36,6 +36,10 @@
                 </executions>
                 <configuration>
                     <mainClass>com.linusjern.marketanalysis.MarketDataWindowConsumer</mainClass>
+                    <arguments>
+                        <argument>-Xms3G</argument>
+                        <argument>-Xms6G</argument>
+                    </arguments>
                 </configuration>
             </plugin>
         </plugins>

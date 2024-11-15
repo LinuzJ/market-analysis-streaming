@@ -9,7 +9,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
-public class Main {
+public class SimulationDataStreamer {
     public static void main(String[] args) {
         // Kafka producer properties
         Properties kafkaProps = new Properties();
@@ -38,7 +38,7 @@ public class Main {
                 String lastTime = splitLine[23];
                 String lastDate = splitLine[26];
 
-                if (lastTime.isBlank()) {
+                if (lastTime.isBlank() || lastDate.isBlank()) {
                     continue;
                 }
 
