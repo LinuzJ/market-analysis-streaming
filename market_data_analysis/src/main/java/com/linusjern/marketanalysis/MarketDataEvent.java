@@ -7,6 +7,7 @@ import org.apache.flink.api.common.functions.MapFunction;
 
 public class MarketDataEvent {
     public String symbol;
+    public String exchange;
     public String securityType;
     public Float value;
     public String time;
@@ -39,6 +40,8 @@ public class MarketDataEvent {
         } else {
             this.timestamp = -1;
         }
+
+        this.checkForExchange();
     }
 
     public boolean isValidEvent() {
@@ -47,9 +50,11 @@ public class MarketDataEvent {
 
     public String toString() {
         if (!this.value.isNaN()) {
-            return "Pared values: " + this.symbol +
-                    " has value" +
-                    Float.toString(this.value);
+            return "Parsed values: " + this.symbol +
+                    " has value " +
+                    Float.toString(this.value) +
+                    " and timestamp: " +
+                    this.timestamp;
         }
         return "No value.";
     }
@@ -67,6 +72,20 @@ public class MarketDataEvent {
         @Override
         public boolean filter(MarketDataEvent event) throws Exception {
             return event.isValidEvent();
+        }
+    }
+
+    private void checkForExchange() {
+        if (this.symbol.indexOf(".") == -1) {
+            return;
+        }
+
+        String[] symbolAndExchange = this.symbol.split(".");
+
+        if (symbolAndExchange.length > 1) {
+            this.exchange = symbolAndExchange[1];
+        } else {
+            this.exchange = "UNKNOWN";
         }
     }
 }

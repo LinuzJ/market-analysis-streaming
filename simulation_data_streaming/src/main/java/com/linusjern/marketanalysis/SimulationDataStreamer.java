@@ -38,7 +38,7 @@ public class SimulationDataStreamer {
                 String lastTime = splitLine[23];
                 String lastDate = splitLine[26];
 
-                if (lastTime.isBlank() || lastDate.isBlank()) {
+                if (lastTime.isBlank()) {
                     continue;
                 }
 
