@@ -1,1 +1,9 @@
+com/linusjern/marketanalysis/types/CrossoverEventResult.class
+com/linusjern/marketanalysis/utils/TimestampConverter.class
+com/linusjern/marketanalysis/types/MarketDataEvent$FilterValidMarketDataEvent.class
+com/linusjern/marketanalysis/types/MarketDataEvent$MapToMarketDataEvent.class
+com/linusjern/marketanalysis/calculations/EvaluateStrategy.class
+com/linusjern/marketanalysis/types/MarketDataEvent$GetLastEventPerWindowFunction.class
 com/linusjern/marketanalysis/MarketDataWindowConsumer.class
+com/linusjern/marketanalysis/types/SignalType.class
+com/linusjern/marketanalysis/types/MarketDataEvent.class

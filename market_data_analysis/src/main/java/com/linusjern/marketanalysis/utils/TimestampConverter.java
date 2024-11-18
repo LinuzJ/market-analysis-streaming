@@ -1,4 +1,4 @@
-package com.linusjern.marketanalysis;
+package com.linusjern.marketanalysis.utils;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;

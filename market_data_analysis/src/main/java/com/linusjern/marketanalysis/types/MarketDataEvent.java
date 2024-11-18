@@ -1,13 +1,13 @@
-package com.linusjern.marketanalysis;
+package com.linusjern.marketanalysis.types;
 
 import java.time.format.DateTimeParseException;
 
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.streaming.api.datastream.DataStream.Collector;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
+
+import com.linusjern.marketanalysis.utils.TimestampConverter;
 
 public class MarketDataEvent {
     public String symbol;
@@ -83,13 +83,13 @@ public class MarketDataEvent {
         }
     }
 
-    public static class MarketDataEventWindowFunction
-            extends ProcessWindowFunction<MarketDataEvent, String, String, TimeWindow> {
+    public static class GetLastEventPerWindowFunction
+            extends ProcessWindowFunction<MarketDataEvent, MarketDataEvent, String, TimeWindow> {
 
         @Override
         public void process(String key,
-                ProcessWindowFunction<MarketDataEvent, String, String, TimeWindow>.Context context,
-                Iterable<MarketDataEvent> input, org.apache.flink.util.Collector<String> out) {
+                ProcessWindowFunction<MarketDataEvent, MarketDataEvent, String, TimeWindow>.Context context,
+                Iterable<MarketDataEvent> input, org.apache.flink.util.Collector<MarketDataEvent> out) {
             MarketDataEvent lastEventInThisWindow = new MarketDataEvent();
             for (MarketDataEvent in : input) {
                 if (lastEventInThisWindow.isValidEvent()) {
@@ -101,7 +101,7 @@ public class MarketDataEvent {
                     lastEventInThisWindow = in;
                 }
             }
-            out.collect("Window: " + context.window() + "Last Event: " + lastEventInThisWindow);
+            out.collect(lastEventInThisWindow);
         }
     }
 
