@@ -29,7 +29,7 @@ public class MarketDataWindowConsumer {
 
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        // env.setParallelism(10);
+        env.setParallelism(1);
 
         KafkaSource<String> source = KafkaSource.<String>builder()
                 .setBootstrapServers("localhost:9092")
@@ -46,12 +46,12 @@ public class MarketDataWindowConsumer {
 
         DataStream<MarketDataEvent> timestampedEvents = parsedEvents
                 .assignTimestampsAndWatermarks(
-                        WatermarkStrategy.<MarketDataEvent>forBoundedOutOfOrderness(Duration.ofSeconds(10))
+                        WatermarkStrategy.<MarketDataEvent>forBoundedOutOfOrderness(Duration.ofSeconds(5))
                                 .withTimestampAssigner((event, timestamp) -> event.timestamp));
 
         DataStream<String> reduced = timestampedEvents
                 .keyBy(MarketDataEvent::getSymbol)
-                .window(TumblingEventTimeWindows.of(Time.seconds(20), Time.seconds(5)))
+                .window(TumblingEventTimeWindows.of(Time.minutes(5), Time.minutes(1)))
                 .process(new MarketDataEventWindowFunction());
 
         reduced.print();

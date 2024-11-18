@@ -90,12 +90,18 @@ public class MarketDataEvent {
         public void process(String key,
                 ProcessWindowFunction<MarketDataEvent, String, String, TimeWindow>.Context context,
                 Iterable<MarketDataEvent> input, org.apache.flink.util.Collector<String> out) {
-            long count = 0;
+            MarketDataEvent lastEventInThisWindow = new MarketDataEvent();
             for (MarketDataEvent in : input) {
-                System.out.println(in.symbol);
-                count++;
+                if (lastEventInThisWindow.isValidEvent()) {
+                    lastEventInThisWindow = in;
+                    continue;
+                }
+
+                if (in.timestamp > lastEventInThisWindow.timestamp) {
+                    lastEventInThisWindow = in;
+                }
             }
-            out.collect("Window: " + context.window() + "count: " + count);
+            out.collect("Window: " + context.window() + "Last Event: " + lastEventInThisWindow);
         }
     }
 
