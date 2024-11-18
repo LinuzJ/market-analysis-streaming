@@ -25,6 +25,7 @@ public class SimulationDataStreamer {
 
         try (BufferedReader br = new BufferedReader(new FileReader(csvFilePath))) {
             String line;
+            br.readLine();
 
             while ((line = br.readLine()) != null) {
                 String[] splitLine = line.split(",", -1);

@@ -6,6 +6,7 @@ import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindo
 import org.apache.flink.streaming.api.windowing.time.Time;
 
 import com.linusjern.marketanalysis.calculations.EvaluateStrategy;
+import com.linusjern.marketanalysis.calculations.FilterSymbols;
 import com.linusjern.marketanalysis.types.CrossoverEventResult;
 import com.linusjern.marketanalysis.types.MarketDataEvent;
 import com.linusjern.marketanalysis.types.MarketDataEvent.FilterValidMarketDataEvent;
@@ -28,7 +29,6 @@ public class MarketDataWindowConsumer {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setStateBackend(new HashMapStateBackend());
-        env.setParallelism(1);
 
         KafkaSource<String> source = KafkaSource.<String>builder()
                 .setBootstrapServers("localhost:9092")
@@ -40,17 +40,17 @@ public class MarketDataWindowConsumer {
                 "Kafka Source");
 
         DataStream<MarketDataEvent> batchedPerWindowAndSymbol = dataStream
-                .map(new MapToMarketDataEvent())
-                .filter(new FilterValidMarketDataEvent())
+                .map(new MapToMarketDataEvent()).setParallelism(10)
+                .filter(new FilterValidMarketDataEvent()).setParallelism(10)
                 .assignTimestampsAndWatermarks(
                         WatermarkStrategy.<MarketDataEvent>forBoundedOutOfOrderness(Duration.ofSeconds(5))
                                 .withTimestampAssigner((event, timestamp) -> event.timestamp))
                 .keyBy(MarketDataEvent::getSymbol)
                 .window(TumblingEventTimeWindows.of(Time.minutes(5), Time.minutes(1)))
-                .process(new GetLastEventPerWindowFunction());
+                .process(new GetLastEventPerWindowFunction()).setParallelism(10);
 
         DataStream<CrossoverEventResult> crossoverEvents = batchedPerWindowAndSymbol.keyBy(MarketDataEvent::getSymbol)
-                .process(new EvaluateStrategy());
+                .process(new EvaluateStrategy()).setParallelism(10).filter(new FilterSymbols.FilterRequestedSymbols());
 
         crossoverEvents.print();
 
