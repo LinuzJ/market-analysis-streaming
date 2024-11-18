@@ -4,6 +4,10 @@ import java.time.format.DateTimeParseException;
 
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.streaming.api.datastream.DataStream.Collector;
+import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 
 public class MarketDataEvent {
     public String symbol;
@@ -48,6 +52,10 @@ public class MarketDataEvent {
         return this.timestamp > 0;
     }
 
+    public String getSymbol() {
+        return this.symbol;
+    }
+
     public String toString() {
         if (!this.value.isNaN()) {
             return "Parsed values: " + this.symbol +
@@ -75,6 +83,22 @@ public class MarketDataEvent {
         }
     }
 
+    public static class MarketDataEventWindowFunction
+            extends ProcessWindowFunction<MarketDataEvent, String, String, TimeWindow> {
+
+        @Override
+        public void process(String key,
+                ProcessWindowFunction<MarketDataEvent, String, String, TimeWindow>.Context context,
+                Iterable<MarketDataEvent> input, org.apache.flink.util.Collector<String> out) {
+            long count = 0;
+            for (MarketDataEvent in : input) {
+                System.out.println(in.symbol);
+                count++;
+            }
+            out.collect("Window: " + context.window() + "count: " + count);
+        }
+    }
+
     private void checkForExchange() {
         if (this.symbol.indexOf(".") == -1) {
             return;
@@ -88,4 +112,5 @@ public class MarketDataEvent {
             this.exchange = "UNKNOWN";
         }
     }
+
 }

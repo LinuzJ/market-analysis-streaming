@@ -1,19 +1,23 @@
 package com.linusjern.marketanalysis;
 
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.datastream.WindowedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.sink.PrintSinkFunction;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
-import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 
 import com.linusjern.marketanalysis.MarketDataEvent.MapToMarketDataEvent;
 import com.linusjern.marketanalysis.MarketDataEvent.FilterValidMarketDataEvent;
+import com.linusjern.marketanalysis.MarketDataEvent.MarketDataEventWindowFunction;
 
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.ReduceFunction;
@@ -36,22 +40,21 @@ public class MarketDataWindowConsumer {
         DataStream<String> dataStream = env.fromSource(source, WatermarkStrategy.noWatermarks(),
                 "Kafka Source");
 
-        DataStream<MarketDataEvent> parsed = dataStream
+        DataStream<MarketDataEvent> parsedEvents = dataStream
                 .map(new MapToMarketDataEvent())
-                .filter(new FilterValidMarketDataEvent())
-                .assignTimestampsAndWatermarks(
-                        WatermarkStrategy.<MarketDataEvent>forBoundedOutOfOrderness(Duration.ofSeconds(5))
-                                .withTimestampAssigner((event, timestamp) -> event.timestamp))
-                .keyBy(event -> event.symbol)
-                .window(TumblingEventTimeWindows.of(Time.seconds(5)))
-                .reduce(new ReduceFunction<MarketDataEvent>() {
-                    @Override
-                    public MarketDataEvent reduce(MarketDataEvent event1, MarketDataEvent event2) {
-                        return event1.timestamp > event2.timestamp ? event1 : event2;
-                    }
-                });
+                .filter(new FilterValidMarketDataEvent());
 
-        parsed.print();
+        DataStream<MarketDataEvent> timestampedEvents = parsedEvents
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy.<MarketDataEvent>forBoundedOutOfOrderness(Duration.ofSeconds(10))
+                                .withTimestampAssigner((event, timestamp) -> event.timestamp));
+
+        DataStream<String> reduced = timestampedEvents
+                .keyBy(MarketDataEvent::getSymbol)
+                .window(TumblingEventTimeWindows.of(Time.seconds(20), Time.seconds(5)))
+                .process(new MarketDataEventWindowFunction());
+
+        reduced.print();
 
         env.execute(jobTitle);
     }
