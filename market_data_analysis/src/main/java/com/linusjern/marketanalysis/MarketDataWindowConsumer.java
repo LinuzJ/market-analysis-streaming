@@ -56,5 +56,4 @@ public class MarketDataWindowConsumer {
 
         env.execute(jobTitle);
     }
-
 }

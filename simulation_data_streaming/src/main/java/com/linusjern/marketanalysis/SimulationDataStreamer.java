@@ -7,9 +7,6 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Properties;
 
 public class SimulationDataStreamer {
@@ -25,12 +22,9 @@ public class SimulationDataStreamer {
         String csvFilePath = "src/main/resources/debs.csv";
 
         KafkaProducer<String, String> producer = new KafkaProducer<>(kafkaProps);
-        HashMap<String, HashMap<String, Integer>> counts = new HashMap<String, HashMap<String, Integer>>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(csvFilePath))) {
             String line;
-            // Skip the first line (header)
-            br.readLine();
 
             while ((line = br.readLine()) != null) {
                 String[] splitLine = line.split(",", -1);
@@ -45,12 +39,6 @@ public class SimulationDataStreamer {
                     continue;
                 }
 
-                counts.putIfAbsent(id, new HashMap<>());
-
-                HashMap<String, Integer> timeMap = counts.get(id);
-
-                timeMap.put(lastTime, timeMap.getOrDefault(lastTime, 0) + 1);
-
                 String toSend = String.join(",", id, secType, lastPrice, lastTime, lastDate);
                 ProducerRecord<String, String> record = new ProducerRecord<>(topic, toSend);
                 producer.send(record);
@@ -58,7 +46,6 @@ public class SimulationDataStreamer {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            // System.out.println(Arrays.asList(counts));
             producer.close();
         }
     }

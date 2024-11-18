@@ -10,9 +10,9 @@ public class ExponentialMovingAverage {
 
     public Float calculateEMA(Float newClose, Float prevWindow, Integer smoothingFactor) throws Exception {
         if (!this.smoothingFactors.contains(smoothingFactor)) {
-            throw new Exception("wrong smoothign factor");
+            throw new Exception("wrong smoothing factor");
         }
-        return (newClose * (2 / (1 + smoothingFactor))) + (prevWindow * (1 - (2 / (1 + smoothingFactor))));
+        return (newClose * (2f / (1f + smoothingFactor))) + (prevWindow * (1f - (2f / (1f + smoothingFactor))));
     }
 
     public SignalType evaluateBreakoutType(Float prevEMA38, Float curEMA38, Float prevEMA100, Float curEMA100) {
@@ -20,8 +20,8 @@ public class ExponentialMovingAverage {
             return SignalType.Long;
         }
 
-        if (curEMA38 > curEMA100 && prevEMA38 >= prevEMA100) {
-            return SignalType.Long;
+        if (curEMA38 < curEMA100 && prevEMA38 >= prevEMA100) {
+            return SignalType.Short;
         }
 
         return SignalType.None;

@@ -24,32 +24,30 @@ public class EvaluateStrategy extends KeyedProcessFunction<String, MarketDataEve
     }
 
     @Override
-    public void processElement(MarketDataEvent value,
+    public void processElement(MarketDataEvent event,
             KeyedProcessFunction<String, MarketDataEvent, CrossoverEventResult>.Context ctx,
             Collector<CrossoverEventResult> out) throws Exception {
 
         if (previousEMA38.value() == null || previousEMA100.value() == null) {
-            previousEMA38.update(value.value);
-            previousEMA100.update(value.value);
-            return;
+            previousEMA38.update(0f);
+            previousEMA100.update(0f);
         }
 
         ExponentialMovingAverage ema = new ExponentialMovingAverage();
-        Float newEMA38 = ema.calculateEMA(value.value, previousEMA38.value(), 38);
-        Float newEMA100 = ema.calculateEMA(value.value, previousEMA100.value(), 100);
+        Float newEMA38 = ema.calculateEMA(event.value, previousEMA38.value(), 38);
+        Float newEMA100 = ema.calculateEMA(event.value, previousEMA100.value(), 100);
 
-        switch (ema.evaluateBreakoutType(previousEMA38.value(), newEMA38, previousEMA100.value(), newEMA100)) {
-            case Long:
-                out.collect(new CrossoverEventResult(value.symbol, SignalType.Long));
-                break;
-            case Short:
-                out.collect(new CrossoverEventResult(value.symbol, SignalType.Short));
-                break;
-            default:
-                break;
+        SignalType signal = ema.evaluateBreakoutType(previousEMA38.value(), newEMA38, previousEMA100.value(),
+                newEMA100);
 
+        previousEMA38.update(newEMA38);
+        previousEMA100.update(newEMA100);
+
+        if (signal == SignalType.None) {
+            return;
         }
 
+        out.collect(new CrossoverEventResult(event, signal));
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.linusjern.marketanalysis.types;
 
+import java.time.Instant;
 import java.time.format.DateTimeParseException;
 
 import org.apache.flink.api.common.functions.FilterFunction;
@@ -17,11 +18,14 @@ public class MarketDataEvent {
     public String time;
     public String date;
     public long timestamp;
+    public long systemTimestampStart;
 
     public MarketDataEvent() {
     }
 
     public MarketDataEvent(String rawString) {
+        this.systemTimestampStart = Instant.now().toEpochMilli();
+
         String[] splitString = rawString.split(",", -1);
 
         this.symbol = splitString[0];

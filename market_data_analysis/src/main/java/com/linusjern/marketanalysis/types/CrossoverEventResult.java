@@ -1,17 +1,26 @@
 package com.linusjern.marketanalysis.types;
 
-public class CrossoverEventResult {
-    public String symbol;
-    public SignalType signal;
+import java.time.Instant;
 
-    public CrossoverEventResult(String symbol, SignalType signal) {
-        this.symbol = symbol;
+public class CrossoverEventResult {
+    public MarketDataEvent event;
+    public SignalType signal;
+    public long processingTime;
+
+    public CrossoverEventResult(MarketDataEvent event, SignalType signal) {
+        this.event = event;
         this.signal = signal;
+        this.processingTime = Instant.now().toEpochMilli() - this.event.systemTimestampStart;
     }
 
     public String toString() {
-        return "\nSYMBOL: " + this.symbol +
+        return "\nSYMBOL: " + this.event.symbol +
                 " HAS SIGNAL " +
-                this.signal;
+                this.signal +
+                " AT PRICE " +
+                Float.toString(this.event.value) +
+                " TOOK " +
+                this.processingTime +
+                " MILLISECONDS.";
     }
 }
